@@ -38,6 +38,8 @@
 #include <algorithm>
 #include <array>
 #include <unistd.h>
+#include <iostream>
+#include <chrono>
 
 #include "MaintenanceManager.h"
 
@@ -304,21 +306,25 @@ namespace WPEFramework {
 
 	    std::unique_lock<std::mutex> lck(m_callMutex);
             LOGINFO("Executing Maintenance tasks");
+            std::cout << "akshay Executing Maintenance tasks" << std::endl;
 
 #if defined(ENABLE_WHOAMI)
 	    /* Purposefully delaying MAINTENANCE_STARTED status to honor POWER compliance */
 	    if (UNSOLICITED_MAINTENANCE == g_maintenance_type) {
                 delayMaintenanceStarted = true;
+                std::cout << "akshay delaying MAINTENANCE_STARTED status" << std::endl;
 	    }
 #endif
 	    if (!delayMaintenanceStarted) {
                 m_statusMutex.lock();
+                std::cout << "akshay delayMaintenanceStarted false case" << std::endl;
                 MaintenanceManager::_instance->onMaintenanceStatusChange(MAINTENANCE_STARTED);
                 m_statusMutex.unlock();
 	    }
 
             /* cleanup if not empty */
             if(!tasks.empty()){
+                std::cout << "akshay checking tasks not empty" << std::endl;
                 tasks.erase (tasks.begin(),tasks.end());
             }
 
@@ -329,6 +335,7 @@ namespace WPEFramework {
 
             /* Activation check */
             activationStatus = getActivatedStatus(skipFirmwareCheck);
+            std::cout << "akshay inside if defined(SUPPRESS_MAINTENANCE) activationStatus: " << activationStatus << std::endl;  
 
             /* we proceed with network check only if
              * "activation-connect", "activation-ready"
@@ -336,6 +343,7 @@ namespace WPEFramework {
             if(activationStatus){
                 /* Network check */
                 internetConnectStatus = isDeviceOnline();
+                std::cout << "inside activationStatus if condition" << std::endl;
             }
 #else /* WhoAmI */
             internetConnectStatus = isDeviceOnline();
@@ -344,9 +352,11 @@ namespace WPEFramework {
 #if defined(ENABLE_WHOAMI)
     string activation_status = checkActivatedStatus();
     bool whoAmIStatus = false;
+    std::cout << "akshay inside ENABLE_WHOAMI activation_status:" << std::endl;
     if (UNSOLICITED_MAINTENANCE == g_maintenance_type) {
         /* WhoAmI check*/
         whoAmIStatus = knowWhoAmI(activation_status);
+        std::cout << "akshay inside ENABLE_WHOAMI whoAmIStatus:" << whoAmIStatus << std::endl;
         if (whoAmIStatus) {
             LOGINFO("knowWhoAmI() returned successfully");
         }
@@ -362,6 +372,7 @@ namespace WPEFramework {
         task_thread.wait(lck);
     }
     else if ( false == internetConnectStatus && activation_status == "activated" ) {
+        std::cout << "akshay value of internetConnectStatus: " << internetConnectStatus << std::endl;
         LOGINFO("Device is not connected to the Internet and Device is already Activated");
 #else /* WhoAmI */
             if ( false == internetConnectStatus ) {
@@ -379,8 +390,10 @@ namespace WPEFramework {
 
 	    if (delayMaintenanceStarted) {
 	        m_statusMutex.lock();
+                std::cout << "akshay delayMaintenanceStarted true case delay got effected" << std::endl;
                 MaintenanceManager::_instance->onMaintenanceStatusChange(MAINTENANCE_STARTED);
                 m_statusMutex.unlock();
+                std::cout << "akshay delayMaintenanceStarted true case delay got effected ending" << std::endl;
 	    }
 
             LOGINFO("Reboot_Pending :%s",g_is_reboot_pending.c_str());
@@ -401,10 +414,12 @@ namespace WPEFramework {
                 tasks.push_back(task_names_foreground[2].c_str());
                 tasks.push_back(task_names_foreground[0].c_str());
                 tasks.push_back(task_names_foreground[3].c_str());
+                std::cout << "akshay inside ENABLE_WHOAMI UNSOLICITED_MAINTENANCE" << std::endl;
             } else {
                 tasks.push_back(task_names_foreground[1].c_str());
                 tasks.push_back(task_names_foreground[2].c_str());
                 tasks.push_back(task_names_foreground[3].c_str());
+                std::cout << "akshay inside else ENABLE_WHOAMI SOLICITED_MAINTENANCE" << std::endl;
             }
 #elif defined(SUPPRESS_MAINTENANCE)
             /* decide which all tasks are needed based on the activation status */
@@ -417,16 +432,19 @@ namespace WPEFramework {
                     /* Add tasks */
                     tasks.push_back(task_names_foreground[1].c_str());
                     tasks.push_back(task_names_foreground[3].c_str());
+                    std::cout << "akshay inside SUPPRESS_MAINTENANCE activationStatus true" << std::endl;
                 }else{
                     tasks.push_back(task_names_foreground[1].c_str());
                     tasks.push_back(task_names_foreground[2].c_str());
                     tasks.push_back(task_names_foreground[3].c_str());
+                    std::cout << "akshay inside SUPPRESS_MAINTENANCE activationStatus false" << std::endl;
                 }
             }
 #else
             tasks.push_back(task_names_foreground[1].c_str());
             tasks.push_back(task_names_foreground[2].c_str());
             tasks.push_back(task_names_foreground[3].c_str());
+            std::cout << "akshay inside else ENABLE_WHOAMI SOLICITED_MAINTENANCE" << std::endl;
 #endif
             for( i = 0; i < tasks.size() && !m_abort_flag; i++) {
                 cmd = tasks[i];
@@ -435,11 +453,18 @@ namespace WPEFramework {
                 m_task_map[tasks[i]] = true;
 
                 if ( !m_abort_flag ){
-                    LOGINFO("Starting Script (SM) :  %s \n",cmd.c_str());
+                    LOGINFO(" akshay Starting Script (SM) :  %s \n",cmd.c_str());
+                    auto start_sys_time = std::chrono::high_resolution_clock::now();
                     system(cmd.c_str());
-
-                    LOGINFO("Waiting to unlock.. [%d/%d]",i+1,(int)tasks.size());
+                    auto end_sys_time = std::chrono::high_resolution_clock::now();
+                    auto sys_duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_sys_time - start_sys_time).count();
+                    LOGINFO("akshay System call time: %lld ms\n", sys_duration);
+                    LOGINFO("akshay  Waiting to unlock.. [%d/%d]", i + 1, (int)tasks.size());
+                    auto start_wait_time = std::chrono::high_resolution_clock::now();
                     task_thread.wait(lck);
+                    auto end_wait_time = std::chrono::high_resolution_clock::now();
+                    auto wait_duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_wait_time - start_wait_time).count();
+                    LOGINFO("akshay Thread waited for %lld ms\n", wait_duration);
                 }
             }
 
@@ -610,8 +635,9 @@ namespace WPEFramework {
 
                 LOGINFO("Received onInternetStatusChange event: [%s:%d]", value.c_str(), state);
                 if (g_listen_to_nwevents) {
-
+                    std::cout << "akshay inside onInternetStatusChange event" << std::endl;
                     if (state == INTERNET_CONNECTED_STATE) {
+                        std::cout << "akshay going for startCriticalTasks functon" << std::endl;
                         startCriticalTasks();
                         g_listen_to_nwevents = false;
                     }
@@ -963,6 +989,7 @@ namespace WPEFramework {
             subscribeToDeviceInitializationEvent();
 #endif /* WhoAmI */
 #if defined(USE_IARMBUS) || defined(USE_IARM_BUS)
+            std::cout<< "akshay called InitializeIARM" << std::endl;
             InitializeIARM();
 #endif /* defined(USE_IARMBUS) || defined(USE_IARM_BUS) */
 
@@ -987,6 +1014,7 @@ namespace WPEFramework {
         void MaintenanceManager::InitializeIARM()
         {
             if (Utils::IARM::init()) {
+                std::cout<< "akshay called IARM_Bus_Init" << std::endl;
                 IARM_Result_t res;
                 // Register for the Maintenance Notification Events
                 IARM_CHECK(IARM_Bus_RegisterEventHandler(IARM_BUS_MAINTENANCE_MGR_NAME, IARM_BUS_MAINTENANCEMGR_EVENT_UPDATE, _MaintenanceMgrEventHandler));
@@ -1006,6 +1034,7 @@ namespace WPEFramework {
 
             /* to know the maintenance is solicited or unsolicited */
             g_maintenance_type=UNSOLICITED_MAINTENANCE;
+            std::cout << "akshay inside value of UNSOLICITED_MAINTENANCE" << UNSOLICITED_MAINTENANCE << std::endl;
             LOGINFO("Triggering Maintenance on bootup");
 
             /* On bootup we check for opt-out value
@@ -1317,6 +1346,7 @@ namespace WPEFramework {
         uint32_t MaintenanceManager::getMaintenanceActivityStatus(const JsonObject& parameters,
                 JsonObject& response)
                 {
+                    std::cout << "akshay staeted getMaintenanceActivityStatus" << std::endl;
                     bool result = false;
                     string isCriticalMaintenance = "false";
                     string isRebootPending = "false";
@@ -1368,7 +1398,7 @@ namespace WPEFramework {
                     response["isCriticalMaintenance"] = b_criticalMaintenace;
                     response["isRebootPending"] = b_rebootPending;
                     result = true;
-
+                    std::cout << "akshay ended getMaintenanceActivityStatus" << std::endl;
                     returnResponse(result);
                 }
         /*
@@ -1380,6 +1410,7 @@ namespace WPEFramework {
         uint32_t MaintenanceManager::getMaintenanceStartTime (const JsonObject& parameters,
                 JsonObject& response)
         {
+            std::cout << "akshay started getMaintenanceStartTime" << std::endl;
             bool result = false;
             string starttime="";
 
@@ -1388,7 +1419,7 @@ namespace WPEFramework {
                   response["maintenanceStartTime"]=stoi(starttime.c_str());
                   result=true;
             }
-
+            std::cout<< "akshay ended getMaintenanceStartTime" << std::endl;
             returnResponse(result);
         }
 
@@ -1841,3 +1872,4 @@ namespace WPEFramework {
 
    } /* namespace Plugin */
 } /* namespace WPEFramework */
+
