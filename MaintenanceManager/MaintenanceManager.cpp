@@ -343,10 +343,11 @@ namespace WPEFramework {
             if(activationStatus){
                 /* Network check */
                 internetConnectStatus = isDeviceOnline();
-                std::cout << "inside activationStatus if condition" << std::endl;
+                std::cout << "inside activationStatus if condition" << internetConnectStatus  std::endl;
             }
 #else /* WhoAmI */
             internetConnectStatus = isDeviceOnline();
+            std::cout << "akshay inside else WhoAmI internetConnectStatus: " << internetConnectStatus << std::endl;
 #endif
 
 #if defined(ENABLE_WHOAMI)
@@ -369,6 +370,7 @@ namespace WPEFramework {
         LOGINFO("knowWhoAmI() returned false and Device is not already Activated");
         g_listen_to_deviceContextUpdate = true;
         LOGINFO("Waiting for onDeviceInitializationContextUpdate event");
+        std::cout << "akshay sending notify_one at line 372" << std::endl;
         task_thread.wait(lck);
     }
     else if ( false == internetConnectStatus && activation_status == "activated" ) {
@@ -1116,6 +1118,7 @@ namespace WPEFramework {
                             else {
                                  SET_STATUS(g_task_status,RFC_SUCCESS);
                                  SET_STATUS(g_task_status,RFC_COMPLETE);
+                                 std::cout << "akshay sending notify_one at line 1119" << std::endl;
                                  task_thread.notify_one();
                                  m_task_map[task_names_foreground[1].c_str()]=false;
                             }
@@ -1128,6 +1131,7 @@ namespace WPEFramework {
                             else {
                                 SET_STATUS(g_task_status,DCM_SUCCESS);
                                 SET_STATUS(g_task_status,DCM_COMPLETE);
+                                std::cout << "akshay sending notify_one at line 1132" << std::endl;
                                 task_thread.notify_one();
                                 m_task_map[task_names_foreground[0].c_str()]=false;
                             }
@@ -1140,6 +1144,7 @@ namespace WPEFramework {
                             else {
                                 SET_STATUS(g_task_status,DIFD_SUCCESS);
                                 SET_STATUS(g_task_status,DIFD_COMPLETE);
+                                std::cout << "akshay sending notify_one at line 1145" << std::endl;
                                 task_thread.notify_one();
                                 m_task_map[task_names_foreground[2].c_str()]=false;
                             }
@@ -1152,6 +1157,7 @@ namespace WPEFramework {
                             else {
                                 SET_STATUS(g_task_status,LOGUPLOAD_SUCCESS);
                                 SET_STATUS(g_task_status,LOGUPLOAD_COMPLETE);
+                                std::cout << "akshay sending notify_one at line 1158" << std::endl;
                                 task_thread.notify_one();
                                 m_task_map[task_names_foreground[3].c_str()]=false;
                             }
@@ -1168,6 +1174,7 @@ namespace WPEFramework {
                             SET_STATUS(g_task_status,TASK_SKIPPED);
                             /* we say FW update task complete */
                             SET_STATUS(g_task_status,DIFD_COMPLETE);
+                            std::cout << "akshay sending notify_one at line 1175" << std::endl;
                             task_thread.notify_one();
                             m_task_map[task_names_foreground[2].c_str()]=false;
                             LOGINFO("FW Download task aborted \n");
@@ -1179,6 +1186,7 @@ namespace WPEFramework {
                             }
                             else {
                                 SET_STATUS(g_task_status,DCM_COMPLETE);
+                                std::cout << "akshay sending notify_one at line 1197" << std::endl;
                                 task_thread.notify_one();
                                 LOGINFO("Error encountered in DCM script task \n");
                                 m_task_map[task_names_foreground[0].c_str()]=false;
@@ -1191,6 +1199,7 @@ namespace WPEFramework {
                             }
                             else {
                                  SET_STATUS(g_task_status,RFC_COMPLETE);
+                                 std::cout << "akshay sending notify_one at line 1200" << std::endl;
                                  task_thread.notify_one();
                                  LOGINFO("Error encountered in RFC script task \n");
                                  m_task_map[task_names_foreground[1].c_str()]=false;
@@ -1204,6 +1213,7 @@ namespace WPEFramework {
                             }
                             else {
                                 SET_STATUS(g_task_status,LOGUPLOAD_COMPLETE);
+                                std::cout << "akshay sending notify_one at line 1214" << std::endl;
                                 task_thread.notify_one();
                                 LOGINFO("Error encountered in LOGUPLOAD script task \n");
                                 m_task_map[task_names_foreground[3].c_str()]=false;
@@ -1217,6 +1227,7 @@ namespace WPEFramework {
                             }
                             else {
                                 SET_STATUS(g_task_status,DIFD_COMPLETE);
+                                std::cout << "akshay sending notify_one at line 1228" << std::endl;
                                 task_thread.notify_one();
                                 LOGINFO("Error encountered in SWUPDATE script task \n");
                                 m_task_map[task_names_foreground[2].c_str()]=false;
@@ -1760,6 +1771,7 @@ namespace WPEFramework {
             else {
                 LOGERR("Failed to stopMaintenance without starting maintenance \n");
             }
+            std::cout << "akshay sending notify_one at line 1772" << std::endl;
             task_thread.notify_one();
 
             if(m_thread.joinable()){
