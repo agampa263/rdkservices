@@ -343,7 +343,7 @@ namespace WPEFramework {
             if(activationStatus){
                 /* Network check */
                 internetConnectStatus = isDeviceOnline();
-                std::cout << "inside activationStatus if condition" << internetConnectStatus  std::endl;
+                std::cout << "inside activationStatus if condition value of internet: " << internetConnectStatus << std::endl;
             }
 #else /* WhoAmI */
             internetConnectStatus = isDeviceOnline();
