@@ -1029,6 +1029,7 @@ namespace WPEFramework {
 
         void MaintenanceManager::maintenanceManagerOnBootup() {
             /* on boot up we set these things */
+            std::cout << "akshay inside maintenanceManagerOnBootup" << std::endl;
             MaintenanceManager::g_currentMode = FOREGROUND_MODE;
 
             MaintenanceManager::m_notify_status=MAINTENANCE_IDLE;
@@ -1080,8 +1081,10 @@ namespace WPEFramework {
 
         void MaintenanceManager::iarmEventHandler(const char *owner, IARM_EventId_t eventId, void *data, size_t len)
         {
+          std::cout << "akshay inside iarmEventHandler started" << std::endl;
           m_statusMutex.lock();
           if ( !m_abort_flag ){
+            std::cout << "akshay inside iarmEventHandler started m_abort_flag false" << std::endl;
             Maint_notify_status_t notify_status=MAINTENANCE_STARTED;
             IARM_Bus_MaintMGR_EventData_t *module_event_data=(IARM_Bus_MaintMGR_EventData_t*)data;
             IARM_Maint_module_status_t module_status;
@@ -1100,6 +1103,7 @@ namespace WPEFramework {
                     /* we got a new start time from DCM script */
                     string l_time(module_event_data->data.startTimeUpdate.start_time);
                     LOGINFO("DCM_NEW_START_TIME_EVENT Start Time %s \n", l_time.c_str());
+                    std::cout << "akshay inside IARM_BUS_DCM_NEW_START_TIME_EVENT" << std::endl;
                     /* Store it in a Global structure */
                     g_epoch_time=l_time;
                 }
