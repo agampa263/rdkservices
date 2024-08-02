@@ -841,12 +841,14 @@ namespace WPEFramework {
                 {
                     lock_guard<mutex> lck(m_uploadLogsMutex);
                     uploadLogsPid = m_uploadLogsPid;
+                    std::cout << "akshay updated m_uploadLogsPid value = " << uploadLogsPid << std::endl;
                 }
 
                 if (-1 != uploadLogsPid)
                 {
                     JsonObject p;
                     JsonObject r;
+                    std::cout << "akshay calling abortLogUpload from onSystemPowerStateChanged" << std::endl;
                     abortLogUpload(p, r);
                 }
             }
@@ -2786,6 +2788,7 @@ namespace WPEFramework {
 
         if (-1 != uploadLogsPid) {
             LOGWARN("Another instance of log upload script is running");
+            std::cout << "akshay calling abortLogUpload from uploadLogsAsync" << std::endl;
             abortLogUpload(parameters, response);
         }
 
@@ -2797,20 +2800,21 @@ namespace WPEFramework {
 
     uint32_t SystemServices::abortLogUpload(const JsonObject& parameters, JsonObject& response)
     {
-
+        std::cout << "akshay started abortLogUpload" << std::endl;
         lock_guard<mutex> lck(m_uploadLogsMutex);
 
         if (-1 != m_uploadLogsPid) {
-
+            std::cout << "akshay inside if condition" << std::endl;
             // Kill child processes
             std::stringstream cmd;
             cmd << "pgrep -P " << m_uploadLogsPid;
 
             FILE* fp = popen(cmd.str().c_str(), "r");
             if (NULL != fp) {
-
+                std::cout << "akshay inside if condition 2" << std::endl;
                 char output[1024];
                 while (NULL != fgets (output, sizeof(output) - 1, fp)) {
+                    std::cout << "akshay inside while loop" << std::endl;
                     std::string line = output;
                     line = trim(line);
 
@@ -2818,6 +2822,7 @@ namespace WPEFramework {
                     int pid = strtol(line.c_str(), &end, 10);
 
                     if (line.c_str() != end && 0 != pid && 1 != pid) {
+                        std::cout <<"akshay inside if condition 3" << std::endl;
                         kill(pid, SIGKILL);
                     } else
                         LOGERR("Bad pid: %d", pid);
@@ -2837,12 +2842,15 @@ namespace WPEFramework {
 
             JsonObject params;
             params["logUploadStatus"] = LOG_UPLOAD_STATUS_ABORTED;
+            std::cout<< "akshay calling sendNotify from abortLogUpload" << std::endl;
             sendNotify(EVT_ONLOGUPLOAD, params);
-
+            std::cout << "akshay calling returnResponse from abortLogUpload" << std::endl;
+            std::cout << "akshay completed abortLogUpload ture" << std::endl;
             returnResponse(true);
         }
 
         LOGERR("Upload logs script is not running");
+        std::cout << "akshay completed abortLogUpload false" << std::endl;
         returnResponse(false);
     }
 
