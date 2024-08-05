@@ -1714,6 +1714,7 @@ namespace WPEFramework {
         uint32_t SystemServices::setDeepSleepTimer(const JsonObject& parameters,
                 JsonObject& response)
 	{
+        std::cout << "akshay setDeepSleepTimer" << std::endl;
 		bool status = false;
 		IARM_Bus_PWRMgr_SetDeepSleepTimeOut_Param_t param;
 		if (parameters.HasLabel("seconds")) {
@@ -1723,8 +1724,10 @@ namespace WPEFramework {
 					sizeof(param));
 
 			if (IARM_RESULT_SUCCESS == res) {
+                std::cout << "akhsay setDeepSleepTimer success" << std::endl;
 				status = true;
 			} else {
+                std::cout << "akhsay setDeepSleepTimer failed" << std::endl;
 				status = false;
 			}
 		} else {
@@ -1877,6 +1880,7 @@ namespace WPEFramework {
         uint32_t SystemServices::getWakeupReason(const JsonObject& parameters,
                 JsonObject& response)
         {
+            std::cout << "akshay getWakeupReason" << std::endl;
             bool status = false;
 	    DeepSleep_WakeupReason_t param;
 	    std::string wakeupReason = "WAKEUP_REASON_UNKNOWN";
@@ -1890,6 +1894,7 @@ namespace WPEFramework {
                 status = true;
                 if (param == DEEPSLEEP_WAKEUPREASON_IR) {
                    wakeupReason = "WAKEUP_REASON_IR";
+                   std::cout << "akshay wakeupReason" << wakeupReason << std::endl;
                 } else if (param == DEEPSLEEP_WAKEUPREASON_RCU_BT) {
                    wakeupReason = "WAKEUP_REASON_RCU_BT";
                 } else if (param == DEEPSLEEP_WAKEUPREASON_RCU_RF4CE) {
@@ -1943,6 +1948,7 @@ namespace WPEFramework {
 
          uint32_t SystemServices::getLastWakeupKeyCode(const JsonObject& parameters, JsonObject& response)
          {
+              std::cout << "akshay getLastWakeupKeyCode" << std::endl;
               bool status = false;
               DeepSleepMgr_WakeupKeyCode_Param_t param;
               uint32_t wakeupKeyCode = 0;
@@ -1954,10 +1960,12 @@ namespace WPEFramework {
               {
                   status = true;
                   wakeupKeyCode = param.keyCode;
+                  std::cout << "akshay wakeupKeyCode" << wakeupKeyCode << std::endl;
               }
               else
               {
                   status = false;
+                  std::cout << "akshay wakeupKeyCode failed" << std::endl;
               }
 
               LOGWARN("WakeupKeyCode : %d\n", wakeupKeyCode);
